@@ -21,7 +21,7 @@ This is a PyTorch implementation of the spline-based convolution operator of Spl
 Matthias Fey, Jan Eric Lenssen, Frank Weichert, Heinrich Müller: [SplineCNN: Fast Geometric Deep Learning with Continuous B-Spline Kernels](https://arxiv.org/abs/1711.08920) (CVPR 2018)
 
 The operator works on all floating point data types and is implemented both for CPU and GPU.
-
+P
 ## Installation
 
 ### Anaconda

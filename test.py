@@ -1,36 +1,36 @@
 import torch
 from torch_spline_conv import spline_conv
 
-# x = torch.rand((4, 2), dtype=torch.float)  # 4 nodes with 2 features each
-# edge_index = torch.tensor([[0, 1, 1, 2, 2, 3], [1, 0, 2, 1, 3, 2]])  # 6 edges
-# pseudo = torch.rand((6, 2), dtype=torch.float)  # two-dimensional edge attributes
-# weight = torch.rand((25, 2, 4), dtype=torch.float)  # 25 parameters for in_channels x out_channels
-# kernel_size = torch.tensor([5, 5])  # 5 parameters in each edge dimension
-# is_open_spline = torch.tensor([1, 1], dtype=torch.uint8)  # only use open B-splines
-# degree = 1  # B-spline degree of 1
-# norm = True  # Normalize output by node degree.
-# root_weight = torch.rand((2, 4), dtype=torch.float)  # separately weight root nodes
-# bias = None  # do not apply an additional bias
 
-encoder = spline_conv_6_1024(x, edge_index, pseudo, weight, kernel_size,
+x = torch.rand((4, 2), dtype=torch.float)  # 4 nodes with 2 features each
+edge_index = torch.tensor([[0, 1, 1, 2, 2, 3], [1, 0, 2, 1, 3, 2]])  # 6 edges
+pseudo = torch.rand((6, 2), dtype=torch.float)  # two-dimensional edge attributes
+weight = torch.rand((25, 2, 4), dtype=torch.float)  # 25 parameters for in_channels x out_channels
+kernel_size = torch.tensor([5, 5])  # 5 parameters in each edge dimension
+is_open_spline = torch.tensor([1, 1], dtype=torch.uint8)  # only use open B-splines
+degree = 1  # B-spline degree of 1
+norm = True  # Normalize output by node degree.
+
+root_weight = torch.rand((2, 4), dtype=torch.float)  # separately weight root nodes
+bias = None  # do not apply an additional bias
+
+out = spline_conv(x, edge_index, pseudo, weight, kernel_size,
                   is_open_spline, degree, norm, root_weight, bias)
 
-decoder = spline_conv_1024_3(x, edge_index, pseudo, weight, kernel_size,
-                  is_open_spline, degree, norm, root_weight, bias)
+print(out.size())
+# torch.Size([4, 4])  # 4 nodes with 4 features each
 
-mesh_covolute = spline_conv_1024_1024(x, edge_index, pseudo, weight, kernel_size,
-                  is_open_spline, degree, norm, root_weight, bias)
+# encoder = spline_conv_6_1024(x, edge_index, pseudo, weight, kernel_size,
+#                   is_open_spline, degree, norm, root_weight, bias)
 
 
-x_mesh,edge_index,pseudo = loadmesh_input(dense = ['/home/dw7445/Projects/VU-summer/coarsen_dataset_m/pre.mat',\
-                   '/home/dw7445/Projects/VU-summer/coarsen_dataset_m/deformed.mat'],
-                   sparse = ['/home/dw7445/Projects/VU-summer/coarsen_dataset_m/sparse/srf.mat',\
-                             '/home/dw7445/Projects/VU-summer/coarsen_dataset_m/sparse/posterior.mat',\
-                            '/home/dw7445/Projects/VU-summer/coarsen_dataset_m/sparse/falciform.mat',\
-                            '/home/dw7445/Projects/VU-summer/coarsen_dataset_m/sparse/leftRidge.mat',\
-                            '/home/dw7445/Projects/VU-summer/coarsen_dataset_m/sparse/rightRdige.mat'])
+# decoder = spline_conv_1024_3(x, edge_index, pseudo, weight, kernel_size,
+#                   is_open_spline, degree, norm, root_weight, bias)
 
-y_mesh = loadmesh_supervise(dense = '/home/dw7445/Projects/VU-summer/coarsen_dataset_m/gt.mat')
+# mesh_covolute = spline_conv_1024_1024(x, edge_index, pseudo, weight, kernel_size,
+#                   is_open_spline, degree, norm, root_weight, bias)
+  
+
 
 '''
 Args:

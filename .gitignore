@@ -3,6 +3,15 @@ build/
 dist/
 .eggs/
 .cache/
+.pytest*/
 *.egg-info/
 .coverage
 *.so
+.coveragerc
+
+data_coarsen/
+raw_coarsen/
+raw_pc/
+results/
+soheil_data/
+
