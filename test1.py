@@ -34,24 +34,23 @@ root_weight = torch.rand((6, 1024), dtype=torch.float, requires_grad=True)  # se
 bias = None  # do not apply an additional bias
 
 print(x.size())
-print(weight.size())
 
-encode = spline_conv(x, edge_index, pseudo, weight, kernel_size,
-                  is_open_spline, degree, norm, root_weight, bias)
+# encode = spline_conv(x, edge_index, pseudo, weight, kernel_size,
+#                   is_open_spline, degree, norm, root_weight, bias)
 
-pseudo1 = torch.rand((edge_index.size(1), 2), dtype=torch.float, requires_grad=True)  # two-dimensional edge attributes
-weight1 = torch.rand((25, 1024, 3), dtype=torch.float, requires_grad=True)  # 25 parameters for in_channels x out_channels
-root_weight1 = torch.rand((1024, 3), dtype=torch.float, requires_grad=True)  # separately weight root nodes
+# pseudo1 = torch.rand((edge_index.size(1), 2), dtype=torch.float, requires_grad=True)  # two-dimensional edge attributes
+# weight1 = torch.rand((25, 1024, 3), dtype=torch.float, requires_grad=True)  # 25 parameters for in_channels x out_channels
+# root_weight1 = torch.rand((1024, 3), dtype=torch.float, requires_grad=True)  # separately weight root nodes
 
-decode = spline_conv(encode, edge_index, pseudo1, weight1, kernel_size,
-                  is_open_spline, degree, norm, root_weight1, bias)
+# decode = spline_conv(encode, edge_index, pseudo1, weight1, kernel_size,
+#                   is_open_spline, degree, norm, root_weight1, bias)
 
-print(decode.size())
+# print(decode.size())
 
-loss = torch.nn.MSELoss()
-output = loss(decode, gt_points)
+# loss = torch.nn.MSELoss()
+# output = loss(decode, gt_points)
 
-output.backward()
+# output.backward()
 
 
 

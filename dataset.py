@@ -57,7 +57,6 @@ class VUDataset(object):
         edges = np.array(np.load(edge_path), dtype='int64')
         edges = edges - 1 # matlab index from 1 but python from 0, so transform from matlab index to python index
 
-
         pre_points = points[0]
         libr_points = points[1]
         gt_points = torch.tensor(points[2], dtype=torch.float, requires_grad=False)
