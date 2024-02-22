@@ -9,7 +9,7 @@ dist/
 *.so
 .coveragerc
 
-data_coarsen/
+data_coarsen*/
 raw_coarsen/
 raw_pc/
 results/

@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from scipy import io as sio
+import random
 
 
 
@@ -24,7 +25,9 @@ from scipy import io as sio
 # edges = np.array(np.load(edge_path), dtype='int64')
 # edges = edges - 1 # matlab index from 1 but python from 0, so transform from matlab index to python index
 
-a = np.array([3,])
-print(a.shape)
+random.seed(1)
+a = [1,2,3,4,5,6]
+random.shuffle(a) 
+print(a)
 
 

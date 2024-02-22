@@ -1,37 +1,83 @@
 import os
-import pandas as pd
 import numpy as np
 import torch
 import random
+import json
 
 
-class VUDataset(object):
-    def __init__(self, root_dir = "data_coarsen", seed = 0, train = True):
+class VUDense(object):
+    def __init__(self, root_dir = "data_coarsen", seed = 0, train=True):
 
-        self.train_dirs = {}
         self.train_list = []
-        self.test_dirs = {}
         self.test_list = []
         self.train = train
+        self.sparse_root_dir = "sparse_coarsen"
+        self.dense_points = {}
+        self.dense_edges = {}
+        self.bipar_points = {}
+        self.bipar_embeddings = {}
+        # self.bipar_edges = {}
+        self.map_gt2bipar = {}
+        self.map_gt2sparse = {}
 
         random.seed(seed)
 
         for liver_name in os.listdir(root_dir):
             liver_dir = os.path.join(root_dir, liver_name)
+            bipar_dir = os.path.join(self.sparse_root_dir, liver_name)
             register_names = os.listdir(liver_dir)
 
             random.shuffle(register_names) 
+       
+            if self.train:
+                train_register_names = register_names[:int(0.75*len(register_names))] # Train:Test=3:1
+                for register_name in train_register_names:
+                    self.train_list.append(register_name)
+                    dense_register_path = os.path.join(liver_dir, register_name)
+                    bipar_register_path = os.path.join(bipar_dir, register_name)
 
-            if train:
-                register_names = register_names[:int(0.75*len(register_names))] # Train:Test=3:1
-                self.train_list.extend([os.path.join(liver_dir, register_name) for register_name in register_names])
-                if liver_name not in self.train_dirs:
-                    self.train_dirs[liver_name] = register_names
-            else:
-                register_names = register_names[int(0.75*len(register_names)):] # Train:Test=3:1
-                self.test_list.extend([os.path.join(liver_dir, register_name) for register_name in register_names])
-                if liver_name not in self.test_dirs:
-                    self.test_dirs[liver_name] = register_names
+                    dense_point_path = os.path.join(dense_register_path, 'points.npy')
+                    dense_edge_path = os.path.join(dense_register_path, 'edges.npy')
+                    bipar_point_path = os.path.join(bipar_register_path, 'points.npy')
+                    bipar_embed_path = os.path.join(bipar_register_path, 'embedding.npy')
+                    # bipar_edge_path = os.path.join(bipar_register_path, 'edges.npy')
+                    gt_id2bipar_gt_id_path = os.path.join(bipar_register_path, 'sparse_gt_map.json')
+                    gt_id2bipar_sparse_id_path = os.path.join(bipar_register_path, 'nearest.json')
+                    
+
+                    self.dense_points[register_name] = np.load(dense_point_path)
+                    self.dense_edges[register_name] = np.load(dense_edge_path)
+                    self.bipar_points[register_name] = np.load(bipar_point_path)
+                    self.bipar_embeddings[register_name] = np.load(bipar_embed_path)
+                    # self.bipar_edges[register_name] = np.load(bipar_edge_path)
+                    with open(gt_id2bipar_gt_id_path, "r") as f:
+                        self.map_gt2bipar[register_name] = json.load(f)
+                    with open(gt_id2bipar_sparse_id_path, "r") as f:
+                        self.map_gt2sparse[register_name] = json.load(f)
+            else:    
+                test_register_names = register_names[int(0.75*len(register_names)):] # Train:Test=3:1
+                for register_name in test_register_names:
+                    self.test_list.append(register_name)
+                    dense_register_path = os.path.join(liver_dir, register_name)
+                    bipar_register_path = os.path.join(bipar_dir, register_name)
+
+                    dense_point_path = os.path.join(dense_register_path, 'points.npy')
+                    dense_edge_path = os.path.join(dense_register_path, 'edges.npy')
+                    bipar_point_path = os.path.join(bipar_register_path, 'points.npy')
+                    bipar_embed_path = os.path.join(bipar_register_path, 'embedding.npy')
+                    # bipar_edge_path = os.path.join(bipar_register_path, 'edges.npy')
+                    gt_id2bipar_gt_id_path = os.path.join(bipar_register_path, 'sparse_gt_map.json')
+                    gt_id2bipar_sparse_id_path = os.path.join(bipar_register_path, 'nearest.json')
+
+                    self.dense_points[register_name] = np.load(dense_point_path)
+                    self.dense_edges[register_name] = np.load(dense_edge_path)
+                    self.bipar_points[register_name] = np.load(bipar_point_path)
+                    self.bipar_embeddings[register_name] = np.load(bipar_embed_path)
+                    # self.bipar_edges[register_name] = np.load(bipar_edge_path)
+                    with open(gt_id2bipar_gt_id_path, "r") as f:
+                        self.map_gt2bipar[register_name] = json.load(f)
+                    with open(gt_id2bipar_sparse_id_path, "r") as f:
+                        self.map_gt2sparse[register_name] = json.load(f)
 
         
 
@@ -45,29 +91,87 @@ class VUDataset(object):
 
     def __getitem__(self, idx):
         if self.train:
-            read_folder_path = self.train_list[idx]
+            register_name = self.train_list[idx]
         else:
-            read_folder_path = self.test_list[idx]
+            register_name = self.test_list[idx]
 
-        data_path = read_folder_path
-        point_path = os.path.join(data_path, 'points.npy')
-        edge_path = os.path.join(data_path, 'edges.npy')
+        dense_points = self.dense_points[register_name]
+        dense_edges = self.dense_edges[register_name]
+        bipar_points = self.bipar_points[register_name]
+        bipar_embeddings = self.bipar_embeddings[register_name]
+        # bipar_edges = self.bipar_edges[register_name]
+        gt2bipar_gt = self.map_gt2bipar[register_name]
+        gt2bipar_sparse = self.map_gt2sparse[register_name]
 
-        points = np.load(point_path)
-        edges = np.array(np.load(edge_path), dtype='int64')
-        edges = edges - 1 # matlab index from 1 but python from 0, so transform from matlab index to python index
-
-        pre_points = points[0]
-        libr_points = points[1]
-        gt_points = torch.tensor(points[2], dtype=torch.float, requires_grad=False)
+        pre_points = dense_points[0]
+        libr_points = dense_points[1]
+        gt_points = torch.tensor(dense_points[2], dtype=torch.float, requires_grad=False)
 
         x = np.concatenate([pre_points, libr_points], axis=1) # 2044 nodes with 6 (3+3) features each
-        x = torch.tensor(x, dtype=torch.float)
+        dense_input = torch.tensor(x, dtype=torch.float)
 
-        edge_index = torch.tensor(edges)  # 18898 edges
+        dense_edges = torch.tensor(dense_edges)  # 18898 edges
 
-        assert x.size(0) == gt_points.size(0)
+        assert dense_input.size(0) == gt_points.size(0)
+
+        sparse_embeddings = []
+        edge_points = []
+        sparse_supervision = []
+
+        for gt_id in gt2bipar_gt:
+            sparse_embeddings.append(bipar_embeddings[gt2bipar_gt[gt_id]])
+            edge_points.append(gt_id)
+            sparse_supervision.append(np.average(bipar_points[gt2bipar_sparse[gt_id]],axis=0))
+
+        sparse_embeddings = torch.tensor(sparse_embeddings, dtype=torch.float, requires_grad=False)
+        edge_points = torch.tensor(edge_points, dtype=torch.float, requires_grad=False)
+        sparse_supervision = torch.tensor(sparse_supervision, dtype=torch.float, requires_grad=False)
+       
+        sample = {'dense_points': dense_input, 'dense_edges': dense_edges, 'dense_gt': gt_points,\
+                   'sparse_embedding': sparse_embeddings, 'edge_points': edge_points, 'sparse_supervision': sparse_supervision}
+
+        return sample
+    
+
+
+
+class VUSparse(object):
+    def __init__(self, root_dir = "sparse_coarsen"):
+
+        self.bipar_points = {}
+        self.bipar_edges = {}
+        self.train_list = []
+
+
+        for liver_name in os.listdir(root_dir):
+            liver_dir = os.path.join(root_dir, liver_name)
+            register_names = os.listdir(liver_dir)
+       
+            for register_name in register_names:
+                self.train_list.append(register_name)
+                sparse_register_path = os.path.join(liver_dir, register_name)
+
+                bipar_point_path = os.path.join(sparse_register_path, 'points.npy')
+                bipar_edge_path = os.path.join(sparse_register_path, 'edges.npy')
+
+                self.bipar_points[register_name] = np.load(bipar_point_path)
+                self.bipar_edges[register_name] = np.load(bipar_edge_path)
         
-        sample = {'points': x, 'edges': edge_index, 'gt': gt_points}
+
+    def __len__(self):
+        
+        return len(self.train_list)
+
+        
+
+    def __getitem__(self, idx):
+
+        register_name = self.train_list[idx]
+        bipar_points = self.bipar_points[register_name]
+        bipar_edges = self.bipar_edges[register_name]
+
+
+        
+        sample = {'bipar_points': bipar_points, 'bipar_edges': bipar_edges}
 
         return sample

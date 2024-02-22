@@ -19,7 +19,7 @@ result_root = 'sparse_coarsen'
 #                 posterior_path = os.path.join(intra_dir, 'IntraOperative','posterior_points_down.mat')
 #                 srf_path = os.path.join(intra_dir, 'IntraOperative','srf_points_down.mat')
 #                 vessel_contour_path = os.path.join(intra_dir, 'IntraOperative','vessel_contour_points_down.mat')
-#                 gt_path = os.path.join(intra_dir, 'GT.mat')
+#                 gt_path = os.path.join(intra_dir, 'GT.mat') vessel_deformed
 
 #                 sparse_points = mat2npy_sparse(posterior_path, srf_path, vessel_contour_path)
 #                 gt_points = mat2npy_point(gt_path)
