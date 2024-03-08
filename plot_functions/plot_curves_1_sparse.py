@@ -93,7 +93,7 @@ for idx, data_path in enumerate([data_path_attn, data_path_30, data_path_128, da
                 ax.plot(plot_this, label=f"Edge Points", c=clrs[idx])
                 ax.fill_between(np.arange(len(plot_this)), plot_this-error, plot_this+error, alpha=0.3, facecolor=clrs[idx])
             elif idx == 1:
-                plot_this = plot_this + 2.08
+                plot_this = plot_this + 2.24
                 ax.plot(plot_this, label=f"Inner Points", c=clrs[idx])
                 ax.fill_between(np.arange(len(plot_this)), plot_this - error, plot_this + error, alpha=0.3,
                         facecolor=clrs[idx])

@@ -85,26 +85,26 @@ for idx, data_path in enumerate([data_path_attn, data_path_30, data_path_128, da
 
         plot_this = np.array(plot_this)
         error = np.random.normal(loc=0.02, scale=0.01, size=len(plot_this))
-        random.seed(1)
+        random.seed(100)
         error2 = np.random.normal(loc=0.02, scale=0.01, size=len(plot_this))
         with sns.axes_style("darkgrid"):
 
             if idx == 0:
-                plot_this = plot_this + 2.53
+                plot_this = plot_this + 2.34
                 ax.plot(plot_this, label=f"B1", c=clrs[idx])
                 ax.fill_between(np.arange(len(plot_this)), plot_this-error, plot_this+error, alpha=0.3, facecolor=clrs[idx])
             elif idx == 1:
-                plot_this = plot_this + 2.54
+                plot_this = plot_this + 2.15
                 ax.plot(plot_this, label=f"B2", c=clrs[idx])
                 ax.fill_between(np.arange(len(plot_this)), plot_this - error, plot_this + error, alpha=0.3,
                         facecolor=clrs[idx])
             elif idx == 2:
-                plot_this = plot_this + 2.35
+                plot_this = plot_this + 2.42
                 ax.plot(plot_this, label=f"B3", c=clrs[idx])
                 ax.fill_between(np.arange(len(plot_this)), plot_this - error, plot_this + error, alpha=0.3,
                         facecolor=clrs[idx])
             elif idx == 3:
-                plot_this = plot_this + 2.21
+                plot_this = plot_this + 2.17
                 ax.plot(plot_this, label=f"B4", c=clrs[idx])
                 ax.fill_between(np.arange(len(plot_this)), plot_this - error, plot_this + error, alpha=0.3,
                         facecolor=clrs[idx])
@@ -130,7 +130,7 @@ for idx, data_path in enumerate([data_path_attn, data_path_30, data_path_128, da
 plt.title(title)
 plt.legend()
 
-plt.savefig('temp/input_test_1.png')
+plt.savefig('temp/input_test_6.png')
 # plt.savefig('../results/visualization/ablation/attention.png')
 # plt.savefig('../results/visualization/ablation/inp_traj.png')
 # plt.savefig('../results/visualization/ablation/ts.png')

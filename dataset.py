@@ -6,7 +6,7 @@ import json
 
 
 class VUDense(object):
-    def __init__(self, root_dir = "data_coarsen", seed = 0, train=True):
+    def __init__(self, root_dir = "data_coarsen", seed = 0, train=True, bs=6):
 
         self.train_list = []
         self.test_list = []
@@ -19,6 +19,9 @@ class VUDense(object):
         # self.bipar_edges = {}
         self.map_gt2bipar = {}
         self.map_gt2sparse = {}
+        self.batch_size = bs
+        self.index = 0
+        self.liver = None
 
         random.seed(seed)
 
@@ -90,10 +93,28 @@ class VUDense(object):
         
 
     def __getitem__(self, idx):
-        if self.train:
-            register_name = self.train_list[idx]
-        else:
-            register_name = self.test_list[idx]
+
+        flag = False
+        if self.index == self.batch_size:
+            self.index = 0
+
+        while(~flag):
+            if self.train:
+                register_name = self.train_list[idx]
+            else:
+                register_name = self.test_list[idx]
+
+            if self.index == 0:         
+                self.liver = register_name[:3]    
+                flag = True
+            else:
+                if register_name[:3] == self.liver:
+                    flag = True
+                else:
+                    flag = False
+                    idx = random.randrange(self.__len__())
+
+        self.index += 1
 
         dense_points = self.dense_points[register_name]
         dense_edges = self.dense_edges[register_name]
@@ -110,7 +131,7 @@ class VUDense(object):
         x = np.concatenate([pre_points, libr_points], axis=1) # 2044 nodes with 6 (3+3) features each
         dense_input = torch.tensor(x, dtype=torch.float)
 
-        dense_edges = torch.tensor(dense_edges)  # 18898 edges
+        dense_edges = torch.tensor(dense_edges, requires_grad=False)  # 18898 edges
 
         assert dense_input.size(0) == gt_points.size(0)
 
@@ -170,7 +191,8 @@ class VUSparse(object):
         bipar_points = self.bipar_points[register_name]
         bipar_edges = self.bipar_edges[register_name]
 
-
+        bipar_points = torch.tensor(bipar_points, requires_grad=False)
+        bipar_edges = torch.tensor(bipar_edges, requires_grad=False)
         
         sample = {'bipar_points': bipar_points, 'bipar_edges': bipar_edges}
 
