@@ -15,4 +15,5 @@ raw_pc/
 results/
 soheil_data/
 sparse_coarsen/
-
+vu_resource/
+plot_functions/

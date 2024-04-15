@@ -17,7 +17,7 @@ class VUDense(object):
         self.bipar_points = {}
         self.bipar_embeddings = {}
         # self.bipar_edges = {}
-        self.map_gt2bipar = {}
+        self.map_gt2bipargt = {}
         self.map_gt2sparse = {}
         self.batch_size = bs
         self.index = 0
@@ -54,7 +54,7 @@ class VUDense(object):
                     self.bipar_embeddings[register_name] = np.load(bipar_embed_path)
                     # self.bipar_edges[register_name] = np.load(bipar_edge_path)
                     with open(gt_id2bipar_gt_id_path, "r") as f:
-                        self.map_gt2bipar[register_name] = json.load(f)
+                        self.map_gt2bipargt[register_name] = json.load(f)
                     with open(gt_id2bipar_sparse_id_path, "r") as f:
                         self.map_gt2sparse[register_name] = json.load(f)
             else:    
@@ -78,7 +78,7 @@ class VUDense(object):
                     self.bipar_embeddings[register_name] = np.load(bipar_embed_path)
                     # self.bipar_edges[register_name] = np.load(bipar_edge_path)
                     with open(gt_id2bipar_gt_id_path, "r") as f:
-                        self.map_gt2bipar[register_name] = json.load(f)
+                        self.map_gt2bipargt[register_name] = json.load(f)
                     with open(gt_id2bipar_sparse_id_path, "r") as f:
                         self.map_gt2sparse[register_name] = json.load(f)
 
@@ -121,7 +121,7 @@ class VUDense(object):
         bipar_points = self.bipar_points[register_name]
         bipar_embeddings = self.bipar_embeddings[register_name]
         # bipar_edges = self.bipar_edges[register_name]
-        gt2bipar_gt = self.map_gt2bipar[register_name]
+        gt2bipar_gt = self.map_gt2bipargt[register_name]
         gt2bipar_sparse = self.map_gt2sparse[register_name]
 
         pre_points = dense_points[0]
@@ -194,6 +194,6 @@ class VUSparse(object):
         bipar_points = torch.tensor(bipar_points, requires_grad=False)
         bipar_edges = torch.tensor(bipar_edges, requires_grad=False)
         
-        sample = {'bipar_points': bipar_points, 'bipar_edges': bipar_edges}
+        sample = {'bipar_points': bipar_points, 'bipar_edges': bipar_edges, 'register_name': register_name}
 
         return sample
