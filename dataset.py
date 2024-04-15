@@ -4,6 +4,9 @@ import torch
 import random
 import json
 
+'''gt_id == dense_id in dense graph, bipar_gt_id == dense_id in bipartite graph, bipar_sparse_id == sparse_id in bipartite graph'''
+'''bipartite graph: point=={sparse_id+bipar_gt_id}, edge=={sparse_id2bipar_gt_id}'''
+
 
 class VUDense(object):
     def __init__(self, root_dir = "data_coarsen", seed = 0, train=True, bs=6):
@@ -140,14 +143,15 @@ class VUDense(object):
         sparse_supervision = []
 
         for gt_id in gt2bipar_gt:
-            sparse_embeddings.append(bipar_embeddings[gt2bipar_gt[gt_id]])
+            sparse_embeddings.append(bipar_embeddings[gt2bipar_gt[gt_id]]) # gt2bipar_gt is nearest map which maps dense id to dense id in bipartite graph.
+            # bipar_embeddings is a tensor of size (num_point, 1024)
             edge_points.append(gt_id)
             sparse_supervision.append(np.average(bipar_points[gt2bipar_sparse[gt_id]],axis=0))
 
         sparse_embeddings = torch.tensor(sparse_embeddings, dtype=torch.float, requires_grad=False)
         edge_points = torch.tensor(edge_points, dtype=torch.float, requires_grad=False)
         sparse_supervision = torch.tensor(sparse_supervision, dtype=torch.float, requires_grad=False)
-       
+        
         sample = {'dense_points': dense_input, 'dense_edges': dense_edges, 'dense_gt': gt_points,\
                    'sparse_embedding': sparse_embeddings, 'edge_points': edge_points, 'sparse_supervision': sparse_supervision}
 
