@@ -53,8 +53,9 @@ class VUDense(object):
 
                     self.dense_points[register_name] = np.load(dense_point_path)
                     self.dense_edges[register_name] = np.load(dense_edge_path)
+                    self.dense_edges[register_name] = np.swapaxes(self.dense_edges[register_name],0,1)
                     self.bipar_points[register_name] = np.load(bipar_point_path)
-                    self.bipar_embeddings[register_name] = np.load(bipar_embed_path)
+                    self.bipar_embeddings[register_name] = torch.load(bipar_embed_path)
                     # self.bipar_edges[register_name] = np.load(bipar_edge_path)
                     with open(gt_id2bipar_gt_id_path, "r") as f:
                         self.map_gt2bipargt[register_name] = json.load(f)
@@ -77,8 +78,10 @@ class VUDense(object):
 
                     self.dense_points[register_name] = np.load(dense_point_path)
                     self.dense_edges[register_name] = np.load(dense_edge_path)
+                    self.dense_edges[register_name] = np.swapaxes(self.dense_edges[register_name],0,1)
+                    # print(self.dense_edges[register_name].shape)
                     self.bipar_points[register_name] = np.load(bipar_point_path)
-                    self.bipar_embeddings[register_name] = np.load(bipar_embed_path)
+                    self.bipar_embeddings[register_name] = torch.load(bipar_embed_path)
                     # self.bipar_edges[register_name] = np.load(bipar_edge_path)
                     with open(gt_id2bipar_gt_id_path, "r") as f:
                         self.map_gt2bipargt[register_name] = json.load(f)
@@ -98,16 +101,17 @@ class VUDense(object):
     def __getitem__(self, idx):
 
         flag = False
+
         if self.index == self.batch_size:
             self.index = 0
 
-        while(~flag):
+        while(not flag):
             if self.train:
                 register_name = self.train_list[idx]
             else:
                 register_name = self.test_list[idx]
 
-            if self.index == 0:         
+            if self.index == 0:
                 self.liver = register_name[:3]    
                 flag = True
             else:
@@ -120,7 +124,7 @@ class VUDense(object):
         self.index += 1
 
         dense_points = self.dense_points[register_name]
-        dense_edges = self.dense_edges[register_name]
+        dense_edges = self.dense_edges[register_name].astype(int, copy=False)
         bipar_points = self.bipar_points[register_name]
         bipar_embeddings = self.bipar_embeddings[register_name]
         # bipar_edges = self.bipar_edges[register_name]
@@ -134,7 +138,9 @@ class VUDense(object):
         x = np.concatenate([pre_points, libr_points], axis=1) # 2044 nodes with 6 (3+3) features each
         dense_input = torch.tensor(x, dtype=torch.float)
 
+
         dense_edges = torch.tensor(dense_edges, requires_grad=False)  # 18898 edges
+        # print(dense_edges.shape)
 
         assert dense_input.size(0) == gt_points.size(0)
 
@@ -142,15 +148,17 @@ class VUDense(object):
         edge_points = []
         sparse_supervision = []
 
-        for gt_id in gt2bipar_gt:
+        for gt_id in gt2bipar_gt: # gt_id type: str
+            # print(bipar_embeddings.shape)
             sparse_embeddings.append(bipar_embeddings[gt2bipar_gt[gt_id]]) # gt2bipar_gt is nearest map which maps dense id to dense id in bipartite graph.
             # bipar_embeddings is a tensor of size (num_point, 1024)
-            edge_points.append(gt_id)
-            sparse_supervision.append(np.average(bipar_points[gt2bipar_sparse[gt_id]],axis=0))
+            edge_points.append(int(gt_id))
+            sparse_supervision.append(torch.from_numpy(np.average(bipar_points[gt2bipar_sparse[gt_id]],axis=0)))
 
-        sparse_embeddings = torch.tensor(sparse_embeddings, dtype=torch.float, requires_grad=False)
-        edge_points = torch.tensor(edge_points, dtype=torch.float, requires_grad=False)
-        sparse_supervision = torch.tensor(sparse_supervision, dtype=torch.float, requires_grad=False)
+        # print(len(sparse_embeddings))
+        sparse_embeddings = torch.stack(sparse_embeddings).float().clone().detach().requires_grad_(False)
+        edge_points = torch.tensor(edge_points, dtype=torch.int, requires_grad=False)
+        sparse_supervision = torch.stack(sparse_supervision).float().clone().detach().requires_grad_(False)
         
         sample = {'dense_points': dense_input, 'dense_edges': dense_edges, 'dense_gt': gt_points,\
                    'sparse_embedding': sparse_embeddings, 'edge_points': edge_points, 'sparse_supervision': sparse_supervision}

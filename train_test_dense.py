@@ -23,8 +23,8 @@ lambda_sparse = 0.5
 
 #Data Loaders
 bs = 1
-train_dl = DataLoader(VUDense(root_dir="data_coarsen", seed = args.seed, train=True), batch_size=bs, shuffle=True)
-test_dl = DataLoader(VUDense(root_dir="data_coarsen", seed = args.seed, train=False), batch_size=bs, shuffle=True)
+train_dl = DataLoader(VUDense(root_dir="data_coarsen_1", seed = args.seed, train=True), batch_size=bs, shuffle=True)
+test_dl = DataLoader(VUDense(root_dir="data_coarsen_1", seed = args.seed, train=False), batch_size=bs, shuffle=True)
 
 # Import model
 from model import SplineConv
@@ -98,16 +98,16 @@ def test(identifier):
     print("{} loss_dense: ".format(identifier), av_loss_dense, "count: ", count, 'loss_sparse: ', av_loss_sparse)
 
     the_dict = {
-        identifier + " loss_dense":av_loss_dense,
-        identifier + " loss_sparse": av_loss_sparse,
-        identifier + "loss": av_loss,
+        identifier + "_loss_dense":av_loss_dense,
+        identifier + "_loss_sparse": av_loss_sparse,
+        identifier + "_loss": av_loss,
     }
     print('the_dict: ', the_dict)
 
     return the_dict, av_loss
 
 
-def one_iteration_training(model, sample, label_dense, label_sparse):
+def one_iteration_training(model, sample, label_dense, label_sparse, edge_ids):
     model.zero_grad()
     optimizer.zero_grad()
     model.train()
@@ -117,7 +117,7 @@ def one_iteration_training(model, sample, label_dense, label_sparse):
     # print("prediction: ", pred)
     loss_dense = criterion(pred, label_dense)
     # print("label_dense: ", label_dense)
-    loss_sparse = criterion(pred[edge_ids], label_sparse)
+    loss_sparse = criterion(pred[edge_ids], label_sparse) # label_sparse: (N_edge, 3)
 
     loss = loss_dense + lambda_sparse*loss_sparse 
     
@@ -158,11 +158,11 @@ def main():
             optimizer.zero_grad()
             model.train()
 
-            loss, acc = one_iteration_training(model, d, label_dense, label_sparse)
+            loss = one_iteration_training(model, d, label_dense, label_sparse, edge_ids)
             loss_tr += loss
 
         print("overall count", overall_count)
-        print("Tr Loss at it: ", tr_it, " loss: ", loss_tr / count, "accuracy: ", accuracy / count)
+        print("Tr Loss at it: ", tr_it, " loss: ", loss_tr / count,)
 
         tr_loss = loss_tr / count
         tr_loss = tr_loss.item()
