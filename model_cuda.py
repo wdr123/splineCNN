@@ -19,8 +19,14 @@ class SplineConv(torch.nn.Module):
 
         self.root_weight = torch.nn.Parameter(torch.rand((input_channel, embed_channel)))
         self.weight = torch.nn.Parameter(torch.rand((30, input_channel, embed_channel)))
-        self.weight1 = torch.nn.Parameter(torch.rand((30, embed_channel, output_channel)))  # 25 parameters for in_channels x out_channels
-        self.root_weight1 = torch.nn.Parameter(torch.rand((embed_channel, output_channel)))  # separately weight root nodes
+        self.root_weight1 = torch.nn.Parameter(torch.rand((embed_channel, embed_channel)))
+        self.weight1 = torch.nn.Parameter(torch.rand((30, embed_channel, embed_channel)))
+        self.root_weight2 = torch.nn.Parameter(torch.rand((embed_channel, embed_channel)))
+        self.weight2 = torch.nn.Parameter(torch.rand((30, embed_channel, embed_channel)))
+        self.root_weight3 = torch.nn.Parameter(torch.rand((embed_channel, embed_channel)))
+        self.weight3 = torch.nn.Parameter(torch.rand((30, embed_channel, embed_channel)))
+        self.weight4 = torch.nn.Parameter(torch.rand((30, embed_channel, output_channel)))  # 25 parameters for in_channels x out_channels
+        self.root_weight4 = torch.nn.Parameter(torch.rand((embed_channel, output_channel)))  # separately weight root nodes
 
         self.kernel_size = torch.tensor([num_kernel, num_kernel])  # 5 parameters in each edge dimension
         self.is_open_spline = torch.tensor([1, 1], dtype=torch.uint8)  # only use open B-splines
@@ -40,13 +46,22 @@ class SplineConv(torch.nn.Module):
 
         encode = spline_conv(x, edge_index, pseudo, self.weight, self.kernel_size,
                   self.is_open_spline, self.degree, self.norm, self.root_weight, self.bias)
+        
+        encode = encode + spline_conv(encode, edge_index, pseudo, self.weight1, self.kernel_size,
+                  self.is_open_spline, self.degree, self.norm, self.root_weight1, self.bias)
+        
+        encode = encode + spline_conv(encode, edge_index, pseudo, self.weight2, self.kernel_size,
+                  self.is_open_spline, self.degree, self.norm, self.root_weight2, self.bias)
+        
+        encode = encode + spline_conv(encode, edge_index, pseudo, self.weight3, self.kernel_size,
+                  self.is_open_spline, self.degree, self.norm, self.root_weight3, self.bias)
 
         encode[edge_point_ids] = 0.5*(encode[edge_point_ids] + edge_point_sparse_embed)
         
-        decode = spline_conv(encode, edge_index, pseudo1, self.weight1, self.kernel_size,
-                  self.is_open_spline, self.degree, self.norm, self.root_weight1, self.bias)
+        decode = spline_conv(encode, edge_index, pseudo1, self.weight4, self.kernel_size,
+                  self.is_open_spline, self.degree, self.norm, self.root_weight4, self.bias)
         
-        return decode
+        return decode.cuda()
 
     def string(self):
         """

@@ -29,7 +29,7 @@ test_dl = DataLoader(VUDense(root_dir="data_coarsen_1", seed = args.seed, train=
 
 # Import model
 from model_cuda import SplineConv
-model = SplineConv().to(device)
+model = SplineConv().to(device_cpu)
 # model.weight_cpu()
 
 criterion = nn.MSELoss()
