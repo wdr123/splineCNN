@@ -28,13 +28,12 @@ class SplineConv(torch.nn.Module):
         self.norm = True  # Normalize output by node degree.
         self.bias = None
 
-
     def forward(self, sample):
 
-        edge_index = sample['dense_edges'][0]
-        x = sample['dense_points'][0]
-        edge_point_ids = sample['edge_points'][0]
-        edge_point_sparse_embed = sample['sparse_embedding'][0]
+        edge_index = sample['dense_edges']
+        x = sample['dense_points']
+        edge_point_ids = sample['edge_points']
+        edge_point_sparse_embed = sample['sparse_embedding']
 
         pseudo = torch.rand((edge_index.size(1), 2), dtype=torch.float, requires_grad=False)  # two-dimensional edge attributes
         pseudo1 = torch.rand((edge_index.size(1), 2), dtype=torch.float, requires_grad=False)  # two-dimensional edge attributes
@@ -47,7 +46,6 @@ class SplineConv(torch.nn.Module):
         decode = spline_conv(encode, edge_index, pseudo1, self.weight1, self.kernel_size,
                   self.is_open_spline, self.degree, self.norm, self.root_weight1, self.bias)
         
-
         return decode
 
     def string(self):

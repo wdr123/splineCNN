@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import random
 import json
+import itertools
 
 '''gt_id == dense_id in dense graph, bipar_gt_id == dense_id in bipartite graph, bipar_sparse_id == sparse_id in bipartite graph'''
 '''bipartite graph: point=={sparse_id+bipar_gt_id}, edge=={sparse_id2bipar_gt_id}'''
@@ -25,6 +26,7 @@ class VUDense(object):
         self.batch_size = bs
         self.index = 0
         self.liver = None
+        self.liver_mini_edgeP_num = {}
 
         random.seed(seed)
 
@@ -56,9 +58,17 @@ class VUDense(object):
                     self.dense_edges[register_name] = np.swapaxes(self.dense_edges[register_name],0,1)
                     self.bipar_points[register_name] = np.load(bipar_point_path)
                     self.bipar_embeddings[register_name] = torch.load(bipar_embed_path)
+                    
                     # self.bipar_edges[register_name] = np.load(bipar_edge_path)
                     with open(gt_id2bipar_gt_id_path, "r") as f:
                         self.map_gt2bipargt[register_name] = json.load(f)
+
+                    if liver_name not in self.liver_mini_edgeP_num:
+                        self.liver_mini_edgeP_num[liver_name] = len(self.map_gt2bipargt[register_name])
+                    else:
+                        if self.liver_mini_edgeP_num[liver_name] > len(self.map_gt2bipargt[register_name]):
+                            self.liver_mini_edgeP_num[liver_name] = len(self.map_gt2bipargt[register_name])
+
                     with open(gt_id2bipar_sparse_id_path, "r") as f:
                         self.map_gt2sparse[register_name] = json.load(f)
             else:    
@@ -85,6 +95,13 @@ class VUDense(object):
                     # self.bipar_edges[register_name] = np.load(bipar_edge_path)
                     with open(gt_id2bipar_gt_id_path, "r") as f:
                         self.map_gt2bipargt[register_name] = json.load(f)
+                    
+                    if liver_name not in self.liver_mini_edgeP_num:
+                        self.liver_mini_edgeP_num[liver_name] = len(self.map_gt2bipargt[register_name])
+                    else:
+                        if self.liver_mini_edgeP_num[liver_name] > len(self.map_gt2bipargt[register_name]):
+                            self.liver_mini_edgeP_num[liver_name] = len(self.map_gt2bipargt[register_name])
+
                     with open(gt_id2bipar_sparse_id_path, "r") as f:
                         self.map_gt2sparse[register_name] = json.load(f)
 
@@ -129,6 +146,12 @@ class VUDense(object):
         bipar_embeddings = self.bipar_embeddings[register_name]
         # bipar_edges = self.bipar_edges[register_name]
         gt2bipar_gt = self.map_gt2bipargt[register_name]
+        truncate_number_batch = self.liver_mini_edgeP_num[self.liver]
+        # print(self.liver)
+        # print(truncate_number_batch)
+        gt2bipar_gt = dict(itertools.islice(gt2bipar_gt.items(), truncate_number_batch)) 
+        # print(len(gt2bipar_gt))
+
         gt2bipar_sparse = self.map_gt2sparse[register_name]
 
         pre_points = dense_points[0]
