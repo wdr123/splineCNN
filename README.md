@@ -4,7 +4,7 @@
 
 --------------------------------------------------------------------------------
 
-This is a PyTorch implementation of the spline-based convolution operator of SplineCNN for handling ML augmented Liver Registration, as described in our paper:
+This is a PyTorch implementation of the spline-based convolution operator of SplineCNN for handling ML augmented Liver Registration, as described in our MICCAI paper:
 
 Dingrong Wang, Soheil et al.: [LIBR+: Improving Intraoperative Liver Registration by Learning the Residual of Biomechanics-Based Deformable Registration](https://arxiv.org/abs/2403.06901)
 
